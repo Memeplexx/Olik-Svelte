@@ -1,6 +1,6 @@
 {
   "name": "olik-svelte",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
@@ -36,10 +36,10 @@
     "rollup-plugin-typescript2": "^0.29.0",
     "ts-jest": "^26.1.4",
     "typescript": "4.0.3",
-    "olik": "^0.1.41"
+    "olik": "^0.1.42"
   },
   "peerDependencies": {
-    "olik": "^0.1.41"
+    "olik": "^0.1.42"
   },
   "jest": {
     "transform": {

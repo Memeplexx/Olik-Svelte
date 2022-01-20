@@ -21,12 +21,21 @@ declare module 'olik' {
   interface Future<C> {
     observe: (fetchImmediately: boolean) => SvelteStore<FutureState<C>> & ({ get: () => void });
   }
+  interface StoreAugment<S> extends SvelteStore<S> {
+  }
 }
 
 type Callback<T> = (arg: DeepReadonly<T>) => void;
 
 export const augmentOlikForSvelte = () => {
   augment({
+    core: {
+      subscribe: <C>(input: Readable<C>) => (callback: Callback<C>) => {
+        callback(input.state);
+        const sub = input.onChange(v => callback(v));
+        return () => sub.unsubscribe();
+      }
+    },
     selection: {
       observe: <S>(input: Readable<S>) => () => ({
         subscribe: (callback: Callback<S>) => {
@@ -72,20 +81,4 @@ export const augmentOlikForSvelte = () => {
       }
     }
   })
-}
-
-export function createStore<S>(args: OptionsForMakingAStore<S>) {
-  const store = createStoreCore(args);
-  return new Proxy<any>(store, {
-    get: (target, prop) => {
-      if (prop === 'subscribe') {
-        return (callback: Callback<S>) => {
-          callback(store.state);
-          const sub = store.onChange(v => callback(v));
-          return () => sub.unsubscribe();
-        }
-      }
-      return target[prop];
-    }
-  }) as SvelteStore<DeepReadonly<S>> & typeof store;
 }
