@@ -21,8 +21,8 @@ describe('Svelte', () => {
   it('should create and update a store', () => {
     const select = createStore({ name: '', state: initialState });
     select.object.property
-      .replace('test');
-    expect(select.state.object.property).toEqual('test');
+      .$replace('test');
+    expect(select.$state.object.property).toEqual('test');
   })
 
 });

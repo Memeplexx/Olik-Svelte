@@ -1,25 +1,16 @@
-import {
-  augment,
-  createStore as createStoreCore,
-  DeepReadonly,
-  Derivation,
-  Future,
-  FutureState,
-  OptionsForMakingAStore,
-  Readable,
-} from 'olik';
+import { augment, DeepReadonly, Derivation, Future, FutureState, Readable } from 'olik';
 
 type SvelteStore<T> = { subscribe: (run: (value: T) => any, invalidate?: any) => any }
 
 declare module 'olik' {
   interface Readable<S> {
-    observe: () => SvelteStore<S>;
+    $observe: () => SvelteStore<S>;
   }
   interface Derivation<R> {
-    observe: () => SvelteStore<R>;
+    $observe: () => SvelteStore<R>;
   }
   interface Future<C> {
-    observe: (fetchImmediately: boolean) => SvelteStore<FutureState<C>> & ({ get: () => void });
+    $observe: (fetchImmediately: boolean) => SvelteStore<FutureState<C>> & ({ get: () => void });
   }
   interface StoreAugment<S> extends SvelteStore<S> {
   }
@@ -31,31 +22,31 @@ export const augmentOlikForSvelte = () => {
   augment({
     core: {
       subscribe: <C>(input: Readable<C>) => (callback: Callback<C>) => {
-        callback(input.state);
-        const sub = input.onChange(v => callback(v));
+        callback(input.$state);
+        const sub = input.$onChange(v => callback(v));
         return () => sub.unsubscribe();
       }
     },
     selection: {
-      observe: <S>(input: Readable<S>) => () => ({
+      $observe: <S>(input: Readable<S>) => () => ({
         subscribe: (callback: Callback<S>) => {
-          callback(input.state);
-          const sub = input.onChange(v => callback(v));
+          callback(input.$state);
+          const sub = input.$onChange(v => callback(v));
           return () => sub.unsubscribe();
         }
       }),
     },
     derivation: {
-      observe: <C>(input: Derivation<C>) => () => ({
+      $observe: <C>(input: Derivation<C>) => () => ({
         subscribe: (callback: Callback<C>) => {
-          callback(input.state);
-          const sub = input.onChange(v => callback(v));
+          callback(input.$state);
+          const sub = input.$onChange(v => callback(v));
           return () => sub.unsubscribe();
         }
       }),
     },
     future: {
-      observe: <C>(input: Future<C>) => (fetchImmediately: boolean) => {
+      $observe: <C>(input: Future<C>) => (fetchImmediately: boolean) => {
         let running = fetchImmediately;
         let callback: Callback<FutureState<C>>;
         const updateState = () => {
