@@ -10,7 +10,7 @@ declare module 'olik' {
     $observe: () => SvelteStore<R>;
   }
   interface Future<C> {
-    $observe: (fetchImmediately: boolean) => SvelteStore<FutureState<C>> & ({ get: () => void });
+    $observe: (args: { fetchImmediately: boolean }) => SvelteStore<FutureState<C>> & ({ get: () => void });
   }
   interface StoreAugment<S> extends SvelteStore<S> {
   }
@@ -46,8 +46,8 @@ export const augmentOlikForSvelte = () => {
       }),
     },
     future: {
-      $observe: <C>(input: Future<C>) => (fetchImmediately: boolean) => {
-        let running = fetchImmediately;
+      $observe: <C>(input: Future<C>) => (args: { fetchImmediately: boolean }) => {
+        let running = args.fetchImmediately;
         let callback: Callback<FutureState<C>>;
         const updateState = () => {
           callback(input.state)
@@ -64,7 +64,7 @@ export const augmentOlikForSvelte = () => {
           subscribe: (cb: Callback<FutureState<C>>) => {
             callback = cb;
             callback(input.state);
-            if (fetchImmediately) { get(); }
+            if (args.fetchImmediately) { get(); }
             return () => running = false;
           },
           get,
